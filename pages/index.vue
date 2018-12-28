@@ -1,66 +1,130 @@
 <template>
-  <section class="container">
-    <div>
-      <logo/>
-      <h1 class="title">
-        tag-app
-      </h1>
-      <h2 class="subtitle">
-        My great Nuxt.js project！！
-      </h2>
-      <div class="links">
-        <a
-          href="https://nuxtjs.org/"
-          target="_blank"
-          class="button--green">Documentation</a>
-        <a
-          href="https://github.com/nuxt/nuxt.js"
-          target="_blank"
-          class="button--grey">GitHub</a>
+  <section class="container mt-3">
+    <!--ログインしていない場合-->
+    <div v-if="user === null">
+      <p>
+        利用するには、ログインしてください。
+      </p>
+      <button @click="login" class="btn btn-light btn-block mt-3 mb-3">ログイン</button>
+    </div>
+
+    <!--ログインしている場合-->
+    <div v-if="user">
+      <div class="form-group">
+        <label for="userForm">User</label>
+        <input v-model="user.name" class="form-control" id="userForm" readonly>
       </div>
     </div>
+
+    <div class="form-group">
+      <label>Repositories</label>
+      <div class="list-group">
+        <div v-for="(repo, index) in repositories" :key="index" class="list-group-item d-flex justify-content-between">
+          <div>
+            <a @click="getBranches">{{ repo.name }}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Branch</label>
+      <select class="custom-select">
+        <option v-for="(branch, index) in branches" :key="index" value="1">{{ branch.name }}</option>
+      </select>
+    </div>
+
+    <div class="form-inline mb-3">
+      <input v-model="form.tag" class="form-control">
+      <button class="btn btn-outline-secondary ml-3">create tag</button>
+    </div>
+
+    <table class="table table-sm">
+      <thead>
+      <tr>
+        <th scope="col">tag</th>
+        <th scope="col">created_at</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr v-for="(tag, index) in tags" :key="index">
+        <td>{{ tag.name }}</td>
+        <td>{{ tag.created_at }}</td>
+      </tr>
+      </tbody>
+    </table>
   </section>
 </template>
 
 <script>
-import Logo from '~/components/Logo.vue'
-
 export default {
-  components: {
-    Logo
+  data() {
+    return {
+      form: {
+        tag: ""
+      }
+    }
+  },
+  computed: {
+    user() {
+      // return this.$store.state.user
+      return {name: "山田"}
+    },
+    repositories() {
+      return [
+        {
+          name: "hoge"
+        },
+        {
+          name: "piyo"
+        },
+        {
+          name: "fuga"
+        }
+      ]
+    },
+    branches() {
+      return [
+        {
+          name: "br1"
+        },
+        {
+          name: "br2"
+        },
+        {
+          name: "br3"
+        }
+      ]
+    },
+    tags() {
+      return [
+        {
+          name: "tag1",
+          created_at: "2018-01-03 00:00:00"
+        },
+        {
+          name: "tag2",
+          created_at: "2018-01-02 00:00:00"
+        },
+        {
+          name: "tag3",
+          created_at: "2018-01-01 00:00:00"
+        }
+      ]
+    }
+  },
+  async mounted() {
+  },
+  methods: {
+    login() {
+      console.log("ログイン")
+    },
+    getBranches() {
+      console.log("ブランチ取得")
+    }
   }
 }
 </script>
 
 <style>
-
-.container {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-.title {
-  font-family: 'Quicksand', 'Source Sans Pro', -apple-system, BlinkMacSystemFont,
-    'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  display: block;
-  font-weight: 300;
-  font-size: 100px;
-  color: #35495e;
-  letter-spacing: 1px;
-}
-
-.subtitle {
-  font-weight: 300;
-  font-size: 42px;
-  color: #526488;
-  word-spacing: 5px;
-  padding-bottom: 15px;
-}
-
-.links {
-  padding-top: 15px;
-}
 </style>
