@@ -14,45 +14,50 @@
         <label for="userForm">User</label>
         <input v-model="user.name" class="form-control" id="userForm" readonly>
       </div>
-    </div>
 
-    <div class="form-group">
-      <label>Repositories</label>
-      <div class="list-group">
-        <div v-for="(repo, index) in repositories" :key="index" class="list-group-item d-flex justify-content-between">
-          <div>
-            <a @click="getBranches">{{ repo.name }}</a>
+      <div class="form-group">
+        <label>Repositories</label>
+        <div class="list-group">
+          <div v-for="(repo, index) in repositories" :key="index" class="list-group-item d-flex justify-content-between">
+            <div>
+              <a @click="getBranches">{{ repo.name }}</a>
+            </div>
           </div>
         </div>
       </div>
+
+      <div class="form-group">
+        <label>Branch</label>
+        <select class="custom-select">
+          <option v-for="(branch, index) in branches" :key="index" value="1">{{ branch.name }}</option>
+        </select>
+      </div>
+
+      <div class="form-inline mb-3">
+        <input v-model="form.tag" class="form-control">
+        <button class="btn btn-outline-secondary ml-3">create tag</button>
+      </div>
+
+      <table class="table table-sm">
+        <thead>
+        <tr>
+          <th scope="col">tag</th>
+          <th scope="col">created_at</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr v-for="(tag, index) in tags" :key="index">
+          <td>{{ tag.name }}</td>
+          <td>{{ tag.created_at }}</td>
+        </tr>
+        </tbody>
+      </table>
+
+      <div class="text-right">
+        <button @click="logout" class="btn btn-danger">ログアウト</button>
+      </div>
     </div>
 
-    <div class="form-group">
-      <label>Branch</label>
-      <select class="custom-select">
-        <option v-for="(branch, index) in branches" :key="index" value="1">{{ branch.name }}</option>
-      </select>
-    </div>
-
-    <div class="form-inline mb-3">
-      <input v-model="form.tag" class="form-control">
-      <button class="btn btn-outline-secondary ml-3">create tag</button>
-    </div>
-
-    <table class="table table-sm">
-      <thead>
-      <tr>
-        <th scope="col">tag</th>
-        <th scope="col">created_at</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr v-for="(tag, index) in tags" :key="index">
-        <td>{{ tag.name }}</td>
-        <td>{{ tag.created_at }}</td>
-      </tr>
-      </tbody>
-    </table>
   </section>
 </template>
 
@@ -67,8 +72,7 @@ export default {
   },
   computed: {
     user() {
-      // return this.$store.state.user
-      return {name: "山田"}
+      return this.$store.state.user
     },
     repositories() {
       return [
@@ -114,10 +118,14 @@ export default {
     }
   },
   async mounted() {
+  	await this.$store.dispatch("INIT_USERS")
   },
   methods: {
     login() {
-      console.log("ログイン")
+      this.$store.dispatch("loginWithUserName")
+    },
+    logout() {
+      this.$store.commit("setUser", null)
     },
     getBranches() {
       console.log("ブランチ取得")
