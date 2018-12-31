@@ -18,7 +18,7 @@
       <div class="form-group">
         <label>Repositories</label>
         <div class="list-group">
-          <div v-for="(repo, index) in repositories" :key="index" class="list-group-item d-flex justify-content-between">
+          <div v-for="(repo, index) in repos" :key="index" class="list-group-item d-flex justify-content-between">
             <div>
               <a @click="getBranches">{{ repo.name }}</a>
             </div>
@@ -74,18 +74,8 @@ export default {
     user() {
       return this.$store.state.user
     },
-    repositories() {
-      return [
-        {
-          name: "hoge"
-        },
-        {
-          name: "piyo"
-        },
-        {
-          name: "fuga"
-        }
-      ]
+    repos() {
+      return this.$store.state.repos
     },
     branches() {
       return [
@@ -119,6 +109,7 @@ export default {
   },
   async mounted() {
   	await this.$store.dispatch("INIT_USERS")
+  	await this.$store.dispatch("FETCH_REPOS")
   },
   methods: {
     login() {

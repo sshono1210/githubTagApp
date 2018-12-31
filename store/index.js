@@ -1,9 +1,11 @@
 import firebase from '~/service/firebase'
+import axios from "axios"
 
 //<<どんなデータを使うのかを定義>>
 export const state = () => {
 	return {
 		user: null,
+		repos: []
 	}
 }
 
@@ -17,6 +19,9 @@ export const state = () => {
 export const mutations = {
 	setUser(state, user) {
 		state.user = user
+	},
+	setRepos(state, repos) {
+		state.repos = repos
 	}
 }
 
@@ -39,5 +44,15 @@ export const actions = {
 				commit("setUser", null)
 			}
 		})
+	},
+	async FETCH_REPOS({commit}) {
+		const request = axios.create({
+			baseURL: 'https://api.github.com',
+			headers: {
+				Authorization: 'token ' + process.env.OAUTH_TOKEN
+			}
+		})
+		const response = await request('/user/repos')
+		commit("setRepos", response.data)
 	}
 }
