@@ -17,20 +17,11 @@
 
       <div class="form-group">
         <label>Repositories</label>
-        <div class="list-group">
-          <div v-for="(repo, index) in repos" :key="index" class="list-group-item d-flex justify-content-between">
-            <div>
-              <a @click="getBranches">{{ repo.name }}</a>
-            </div>
-          </div>
+        <div>
+          <select v-model="tags_url" @change="getTags(tags_url)" class="custom-select">
+            <option v-for="(repo, index) in repos" :key="index" :value="repo.tags_url">{{ repo.name }}</option>
+          </select>
         </div>
-      </div>
-
-      <div class="form-group">
-        <label>Branch</label>
-        <select class="custom-select">
-          <option v-for="(branch, index) in branches" :key="index" value="1">{{ branch.name }}</option>
-        </select>
       </div>
 
       <div class="form-inline mb-3">
@@ -67,7 +58,8 @@ export default {
     return {
       form: {
         tag: ""
-      }
+      },
+      tags_url: null
     }
   },
   computed: {
@@ -77,39 +69,12 @@ export default {
     repos() {
       return this.$store.state.repos
     },
-    branches() {
-      return [
-        {
-          name: "br1"
-        },
-        {
-          name: "br2"
-        },
-        {
-          name: "br3"
-        }
-      ]
-    },
     tags() {
-      return [
-        {
-          name: "tag1",
-          created_at: "2018-01-03 00:00:00"
-        },
-        {
-          name: "tag2",
-          created_at: "2018-01-02 00:00:00"
-        },
-        {
-          name: "tag3",
-          created_at: "2018-01-01 00:00:00"
-        }
-      ]
+      return this.$store.state.tags
     }
   },
   async mounted() {
   	await this.$store.dispatch("INIT_USERS")
-  	await this.$store.dispatch("FETCH_REPOS")
   },
   methods: {
     login() {
@@ -118,8 +83,8 @@ export default {
     logout() {
       this.$store.commit("setUser", null)
     },
-    getBranches() {
-      console.log("ブランチ取得")
+    getTags(url) {
+      this.$store.dispatch("FETCH_TAGS", url)
     }
   }
 }

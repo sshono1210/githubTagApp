@@ -5,7 +5,8 @@ import axios from "axios"
 export const state = () => {
 	return {
 		user: null,
-		repos: []
+		repos: [],
+		tags: []
 	}
 }
 
@@ -22,6 +23,9 @@ export const mutations = {
 	},
 	setRepos(state, repos) {
 		state.repos = repos
+	},
+	setTags(state, tags) {
+		state.tags = tags
 	}
 }
 
@@ -30,16 +34,18 @@ export const mutations = {
  * commit関数を使って mutations を呼び出す
  * */
 export const actions = {
-	async loginWithUserName({commit}) {
+	async loginWithUserName({dispatch, commit}) {
 		const provider = new firebase.auth.GithubAuthProvider()
 		const result = await firebase.auth().signInWithPopup(provider)
-		var user = result.user
+		const user = result.user
 		commit("setUser", { name : user.displayName })
+		dispatch("FETCH_REPOS")
 	},
-	async INIT_USERS({commit}) {
+	async INIT_USERS({dispatch, commit}) {
 		firebase.auth().onAuthStateChanged(user => {
 			if (user) {
 				commit("setUser", { name: user.displayName})
+				dispatch("FETCH_REPOS")
 			} else {
 				commit("setUser", null)
 			}
@@ -52,7 +58,17 @@ export const actions = {
 				Authorization: 'token ' + process.env.OAUTH_TOKEN
 			}
 		})
-		const response = await request('/user/repos')
+		const response = await request('/user/repos?per_page=100')
 		commit("setRepos", response.data)
+	},
+	async FETCH_TAGS({commit}, url) {
+		const request = axios.create({
+			// baseURL: 'https://api.github.com',
+			headers: {
+				Authorization: 'token ' + process.env.OAUTH_TOKEN
+			}
+		})
+		const response = await request(url)
+		commit("setTags", response.data)
 	}
 }
