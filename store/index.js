@@ -74,9 +74,8 @@ export const actions = {
 		const response = await request('/user/repos?per_page=100')
 		commit("setRepos", response.data)
 	},
-	async FETCH_TAGS({commit}, url) {
+	async FETCH_TAGS({state, commit}, url) {
 		const request = axios.create({
-			// baseURL: 'https://api.github.com',
 			headers: {
 				Authorization: 'token ' + state.token
 			}
