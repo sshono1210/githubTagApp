@@ -9,6 +9,7 @@ export const state = () => {
 		repos: [],
 		tags: [],
 		token: null,
+		branches: [],
 	}
 }
 
@@ -32,6 +33,9 @@ export const mutations = {
 	},
 	setToken(state, token) {
 		state.token = token
+	},
+	setBranches(state, branches) {
+		state.branches = branches
 	}
 }
 
@@ -80,7 +84,16 @@ export const actions = {
 				Authorization: 'token ' + state.token
 			}
 		})
-		const response = await request(url)
+		const response = await request(url + '/tags')
 		commit("setTags", response.data)
+	},
+	async FETCH_BRANCHES({state, commit}, url) {
+		const request = axios.create({
+			headers: {
+				Authorization: 'token ' + state.token
+			}
+		})
+		const response = await request(url + '/branches')
+		commit("setBranches", response.data)
 	}
 }

@@ -18,14 +18,17 @@
       <div class="form-group">
         <label>Repositories</label>
         <div>
-          <select v-model="tags_url" @change="getTags(tags_url)" class="custom-select">
-            <option v-for="(repo, index) in repos" :key="index" :value="repo.tags_url">{{ repo.name }}</option>
+          <select v-model="repo_url" @change="getRepoData(repo_url)" class="custom-select">
+            <option v-for="(repo, index) in repos" :key="index" :value="repo.url">{{ repo.name }}</option>
           </select>
         </div>
       </div>
 
       <div class="form-inline mb-3">
-        <input v-model="form.tag" class="form-control">
+        <select class="custom-select">
+          <option v-for="(branch, index) in branches" :key="index" :value="branch.name">{{ branch.name }}</option>
+        </select>
+        <input v-model="form.tag" class="form-control ml-3">
         <button class="btn btn-outline-secondary ml-3">create tag</button>
       </div>
 
@@ -59,7 +62,7 @@ export default {
       form: {
         tag: ""
       },
-      tags_url: null
+      repo_url: null
     }
   },
   computed: {
@@ -71,6 +74,9 @@ export default {
     },
     tags() {
       return this.$store.state.tags
+    },
+    branches() {
+      return this.$store.state.branches
     }
   },
   async mounted() {
@@ -83,8 +89,9 @@ export default {
     logout() {
       this.$store.dispatch("LOGOUT")
     },
-    getTags(url) {
+    getRepoData(url) {
       this.$store.dispatch("FETCH_TAGS", url)
+      this.$store.dispatch("FETCH_BRANCHES", url)
     }
   }
 }
