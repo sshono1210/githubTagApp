@@ -1,12 +1,14 @@
 import firebase from '~/service/firebase'
 import axios from "axios"
+import { firebaseMutations, firebaseAction } from 'vuexfire'
 
 //<<どんなデータを使うのかを定義>>
 export const state = () => {
 	return {
 		user: null,
 		repos: [],
-		tags: []
+		tags: [],
+		token: null,
 	}
 }
 
@@ -18,6 +20,7 @@ export const state = () => {
  * mutations経由で変更していれば、mutationsを使用している場所を調べればいいので楽
  * */
 export const mutations = {
+	...firebaseMutations,
 	setUser(state, user) {
 		state.user = user
 	},
@@ -26,6 +29,9 @@ export const mutations = {
 	},
 	setTags(state, tags) {
 		state.tags = tags
+	},
+	setToken(state, token) {
+		state.token = token
 	}
 }
 
@@ -38,24 +44,31 @@ export const actions = {
 		const provider = new firebase.auth.GithubAuthProvider()
 		const result = await firebase.auth().signInWithPopup(provider)
 		const user = result.user
+		const token = result.credential.accessToken
 		commit("setUser", { name : user.displayName })
+		commit("setToken", token)
+		localStorage.setItem("token", token)
 		dispatch("FETCH_REPOS")
 	},
 	async INIT_USERS({dispatch, commit}) {
 		firebase.auth().onAuthStateChanged(user => {
 			if (user) {
 				commit("setUser", { name: user.displayName})
+				commit("setToken", localStorage.getItem('token'))
 				dispatch("FETCH_REPOS")
 			} else {
 				commit("setUser", null)
 			}
 		})
 	},
-	async FETCH_REPOS({commit}) {
+	async LOGOUT({commit}) {
+		firebase.auth().signOut()
+	},
+	async FETCH_REPOS({state, commit}) {
 		const request = axios.create({
 			baseURL: 'https://api.github.com',
 			headers: {
-				Authorization: 'token ' + process.env.OAUTH_TOKEN
+				Authorization: 'token ' + state.token
 			}
 		})
 		const response = await request('/user/repos?per_page=100')
@@ -65,7 +78,7 @@ export const actions = {
 		const request = axios.create({
 			// baseURL: 'https://api.github.com',
 			headers: {
-				Authorization: 'token ' + process.env.OAUTH_TOKEN
+				Authorization: 'token ' + state.token
 			}
 		})
 		const response = await request(url)

@@ -81,7 +81,7 @@ export default {
       this.$store.dispatch("loginWithUserName")
     },
     logout() {
-      this.$store.commit("setUser", null)
+      this.$store.dispatch("LOGOUT")
     },
     getTags(url) {
       this.$store.dispatch("FETCH_TAGS", url)
