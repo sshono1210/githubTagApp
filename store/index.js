@@ -65,7 +65,7 @@ export const actions = {
 			}
 		})
 	},
-	async LOGOUT({commit}) {
+	LOGOUT() {
 		firebase.auth().signOut()
 	},
 	async FETCH_REPOS({state, commit}) {
