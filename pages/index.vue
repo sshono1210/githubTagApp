@@ -28,7 +28,7 @@
       </div>
 
       <div>
-        <label>Create Tag</label>
+        <label>Create Tag and Release</label>
         <div class="form-inline mb-3">
           <input v-model="form.tag" class="form-control" placeholder="Tag version">
           <span class="ml-3 mr-3">@</span>
