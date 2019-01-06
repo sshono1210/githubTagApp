@@ -30,7 +30,7 @@
       <div>
         <label>Create Tag and Release</label>
         <div class="form-inline mb-3">
-          <input v-model="form.tag" class="form-control" placeholder="Tag version">
+          <input v-model="form.tag" class="form-control" placeholder="e.g. v1.0.0">
           <span class="ml-3 mr-3">@</span>
           <select v-if="!hasBranches" class="custom-select">
             <option value="">リポジトリを選択してください</option>
@@ -39,6 +39,7 @@
             <option v-for="(branch, index) in branches" :key="index" :value="branch.name">Target: {{ branch.name }}</option>
           </select>
         </div>
+        <p v-if="is_invalid_semver" class="text-danger small">重複しないSEMVER形式で入力してください</p>
 
         <div class="form-group">
           <input v-model="form.title" class="form-control" placeholder="Release title">
@@ -50,7 +51,7 @@
           </div>
           <div class="text-right">
             <button @click="createRelease()" class="btn btn-success mt-3" :disabled="!canCreateRelease">Publish release</button>
-            <button @click="createRelease('true')" class="btn btn-outline-secondary mt-3" :disabled="!canCreateRelease">Save draft</button>
+            <!--<button @click="createRelease('true')" class="btn btn-outline-secondary mt-3" :disabled="!canCreateRelease">Save draft</button>-->
           </div>
         </div>
       </div>
@@ -60,17 +61,17 @@
         <ul class="list-group mb-3">
           <li v-if="!hasTagsInFbdb" class="list-group-item">登録したタグはありません</li>
           <li v-for="(tag2, index) in tagsInFbdb" :key="index" class="list-group-item">
-            {{ tag2.tag }} {{ tag2.date }}
+            {{ tag2.tag }}
           </li>
         </ul>
 
-        <label>GitHub上に存在するタグ</label>
-        <ul class="list-group mb-3">
-          <li v-if="!hasTags" class="list-group-item">登録したタグはありません</li>
-          <li v-for="(tag, index) in tags" :key="index" class="list-group-item">
-            {{ tag.name }}
-          </li>
-        </ul>
+        <!--<label>GitHub上に存在するタグ</label>-->
+        <!--<ul class="list-group mb-3">-->
+          <!--<li v-if="!hasTags" class="list-group-item">登録したタグはありません</li>-->
+          <!--<li v-for="(tag, index) in tags" :key="index" class="list-group-item">-->
+            <!--{{ tag.name }}-->
+          <!--</li>-->
+        <!--</ul>-->
       </div>
     </div>
 
@@ -78,13 +79,16 @@
 </template>
 
 <script>
+import semver from "semver"
+
 export default {
   data() {
     return {
       form: {
       	target: "master"
       },
-      repo_url: null
+      repo_url: null,
+      is_invalid_semver: false
     }
   },
   computed: {
@@ -103,9 +107,9 @@ export default {
     branches() {
       return this.$store.state.branches
     },
-    hasTags() {
-      return this.tags.length > 0
-    },
+    // hasTags() {
+    //   return this.tags.length > 0
+    // },
     hasTagsInFbdb() {
       return this.tagsInFbdb.length > 0
     },
@@ -114,6 +118,9 @@ export default {
     },
     canCreateRelease() {
       return this.hasBranches && this.form.tag
+    },
+    isValidSEMVER() {
+      return !!semver.valid(this.form.tag)
     }
   },
   async mounted() {
@@ -130,16 +137,23 @@ export default {
       this.$store.dispatch("FETCH_TAGS", url)
       this.$store.dispatch("FETCH_BRANCHES", url)
     },
-    createRelease(bool) {
+    async createRelease(bool) {
+      if (!this.isValidSEMVER) {
+        this.is_invalid_semver = true
+        return
+      }
       this.$store.dispatch("createTagAndRelease", {
-      	url: this.repo_url,
+        url: this.repo_url,
         tag: this.form.tag,
         target: this.form.target,
         title: this.form.title,
         description: this.form.description,
         isDraft: !!bool,
         isPreRelease: !!this.form.preRelease
+      }).catch((e) => {
+      	this.is_invalid_semver = true
       })
+      this.is_invalid_semver = false
     }
   }
 }

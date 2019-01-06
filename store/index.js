@@ -13,7 +13,7 @@ export const state = () => {
 	return {
 		user: null,
 		repos: [],
-		tags: [],
+		// tags: [],
 		token: null,
 		branches: [],
 		tags_in_FBDB: []
@@ -28,9 +28,9 @@ export const mutations = {
 	setRepos(state, repos) {
 		state.repos = repos
 	},
-	setTags(state, tags) {
-		state.tags = tags
-	},
+	// setTags(state, tags) {
+	// 	state.tags = tags
+	// },
 	setToken(state, token) {
 		state.token = token
 	},
@@ -101,8 +101,8 @@ export const actions = {
 		commit("setRepos", response.data)
 	},
 	async FETCH_TAGS({dispatch, state, commit}, url) {
-		const response = await axios(url + '/tags')
-		commit("setTags", response.data)
+		// const response = await axios(url + '/tags')
+		// commit("setTags", response.data)
 		const repo = getRepoName(url)
 		dispatch("FETCH_TAGS_IN_FBDB", repo)
 	},
