@@ -1,6 +1,13 @@
 import firebase from '~/service/firebase'
 import axios from "axios"
 import { firebaseMutations, firebaseAction } from 'vuexfire'
+const db = firebase.database()
+const tagsRef = repo => {
+	return db.ref(`/tags/${repo}`)
+}
+const getRepoName = url => {
+	return url.split("/").slice(-1)[0]
+}
 
 export const state = () => {
 	return {
@@ -9,6 +16,7 @@ export const state = () => {
 		tags: [],
 		token: null,
 		branches: [],
+		tags_in_FBDB: []
 	}
 }
 
@@ -57,7 +65,19 @@ export const actions = {
 			}
 		})
 		const response = await request(data.url + '/releases')
+		const tag = response.data.tag_name
+		const date = new Date()
+		const repo = getRepoName(data.url)
+		tagsRef(repo).push().set({
+			tag,
+			date: `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()} ${date.getHours()}:${date.getMinutes()}`
+		})
 	},
+	FETCH_TAGS_IN_FBDB: firebaseAction(({ bindFirebaseRef }, repo) => {
+		return new Promise( (resolve) => {
+			bindFirebaseRef('tags_in_FBDB', tagsRef(repo), { resolve })
+		} )
+	}),
 	async INIT_USERS({dispatch, commit}) {
 		firebase.auth().onAuthStateChanged(user => {
 			if (user) {
@@ -80,9 +100,11 @@ export const actions = {
 		const response = await request('/user/repos?per_page=100')
 		commit("setRepos", response.data)
 	},
-	async FETCH_TAGS({state, commit}, url) {
+	async FETCH_TAGS({dispatch, state, commit}, url) {
 		const response = await axios(url + '/tags')
 		commit("setTags", response.data)
+		const repo = getRepoName(url)
+		dispatch("FETCH_TAGS_IN_FBDB", repo)
 	},
 	async FETCH_BRANCHES({state, commit}, url) {
 		const response = await axios(url + '/branches')

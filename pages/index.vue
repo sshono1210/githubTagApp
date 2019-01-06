@@ -56,9 +56,17 @@
       </div>
 
       <div>
-        <label>Tags</label>
+        <label>前回発行したタグ</label>
         <ul class="list-group mb-3">
-          <li v-if="!hasTags" class="list-group-item">登録されたタグはありません</li>
+          <li v-if="!hasTagsInFbdb" class="list-group-item">登録したタグはありません</li>
+          <li v-for="(tag2, index) in tagsInFbdb" :key="index" class="list-group-item">
+            {{ tag2.tag }} {{ tag2.date }}
+          </li>
+        </ul>
+
+        <label>GitHub上に存在するタグ</label>
+        <ul class="list-group mb-3">
+          <li v-if="!hasTags" class="list-group-item">登録したタグはありません</li>
           <li v-for="(tag, index) in tags" :key="index" class="list-group-item">
             {{ tag.name }}
           </li>
@@ -89,11 +97,17 @@ export default {
     tags() {
       return this.$store.state.tags
     },
+    tagsInFbdb() {
+      return this.$store.state.tags_in_FBDB
+    },
     branches() {
       return this.$store.state.branches
     },
     hasTags() {
       return this.tags.length > 0
+    },
+    hasTagsInFbdb() {
+      return this.tagsInFbdb.length > 0
     },
     hasBranches() {
       return this.branches.length > 0
