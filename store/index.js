@@ -46,6 +46,7 @@ export const mutations = {
 export const actions = {
 	async loginWithUserName({dispatch, commit}) {
 		const provider = new firebase.auth.GithubAuthProvider()
+		provider.addScope('repo')
 		const result = await firebase.auth().signInWithPopup(provider)
 		const user = result.user
 		const token = result.credential.accessToken
@@ -53,6 +54,24 @@ export const actions = {
 		commit("setToken", token)
 		localStorage.setItem("token", token)
 		dispatch("FETCH_REPOS")
+	},
+	async createTagAndRelease({dispatch, state, commit}, data) {
+		const request = axios.create({
+			baseURL: data.url,
+			method: 'POST',
+			headers: {
+				Authorization: 'token ' + state.token,
+			},
+			data: {
+				"tag_name": data.tag,
+				"target_commitish": data.target,
+				"name": data.title,
+				"body": data.description,
+				"draft": data.isDraft,
+				"prerelease": data.isPreRelease
+			}
+		})
+		const response = await request('/releases')
 	},
 	async INIT_USERS({dispatch, commit}) {
 		firebase.auth().onAuthStateChanged(user => {
