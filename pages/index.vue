@@ -29,6 +29,16 @@
 
       <div>
         <label>Create Tag and Release</label>
+        <div class="form-inline mb-2">
+          <span class="mr-3">このページから登録したタグ</span>
+          <select v-if="!hasTagsInFbdb" class="custom-select">
+            <option value="">登録したタグはありません</option>
+          </select>
+          <select v-model="form.registeredTag" @change="inputFormTag()" v-if="hasTagsInFbdb" class="custom-select">
+            <option v-for="(tag2, index) in tagsInFbdb" :key="index" class="list-group-item">{{ tag2.tag }}</option>
+          </select>
+        </div>
+
         <div class="form-inline mb-3">
           <input v-model="form.tag" class="form-control" placeholder="e.g. v1.0.0">
           <span class="ml-3 mr-3">@</span>
@@ -57,21 +67,13 @@
       </div>
 
       <div>
-        <label>前回発行したタグ</label>
+        <label>Tags</label>
         <ul class="list-group mb-3">
-          <li v-if="!hasTagsInFbdb" class="list-group-item">登録したタグはありません</li>
-          <li v-for="(tag2, index) in tagsInFbdb" :key="index" class="list-group-item">
-            {{ tag2.tag }}
+          <li v-if="!hasTags" class="list-group-item">登録したタグはありません</li>
+          <li v-for="(tag, index) in tags" :key="index" class="list-group-item">
+            {{ tag.name }}
           </li>
         </ul>
-
-        <!--<label>GitHub上に存在するタグ</label>-->
-        <!--<ul class="list-group mb-3">-->
-          <!--<li v-if="!hasTags" class="list-group-item">登録したタグはありません</li>-->
-          <!--<li v-for="(tag, index) in tags" :key="index" class="list-group-item">-->
-            <!--{{ tag.name }}-->
-          <!--</li>-->
-        <!--</ul>-->
       </div>
     </div>
 
@@ -107,9 +109,9 @@ export default {
     branches() {
       return this.$store.state.branches
     },
-    // hasTags() {
-    //   return this.tags.length > 0
-    // },
+    hasTags() {
+      return this.tags.length > 0
+    },
     hasTagsInFbdb() {
       return this.tagsInFbdb.length > 0
     },
@@ -144,7 +146,7 @@ export default {
       }
       this.$store.dispatch("createTagAndRelease", {
         url: this.repo_url,
-        tag: this.form.tag,
+        tag: semver.clean(this.form.tag),
         target: this.form.target,
         title: this.form.title,
         description: this.form.description,
@@ -154,6 +156,9 @@ export default {
       	this.is_invalid_semver = true
       })
       this.is_invalid_semver = false
+    },
+    inputFormTag() {
+      this.form.tag = this.form.registeredTag
     }
   }
 }
