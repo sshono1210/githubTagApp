@@ -2,7 +2,6 @@ import firebase from '~/service/firebase'
 import axios from "axios"
 import { firebaseMutations, firebaseAction } from 'vuexfire'
 
-//<<どんなデータを使うのかを定義>>
 export const state = () => {
 	return {
 		user: null,
@@ -13,13 +12,6 @@ export const state = () => {
 	}
 }
 
-/**
- * << データに対する操作を定義する（単純な処理） >>
- * setを様々なところで呼び出してしまうと、
- * どこでデータを書き換えられたのかがわからなくなってしまうのを防ぐため、
- * mutations経由で行うことにする。
- * mutations経由で変更していれば、mutationsを使用している場所を調べればいいので楽
- * */
 export const mutations = {
 	...firebaseMutations,
 	setUser(state, user) {
@@ -39,10 +31,6 @@ export const mutations = {
 	}
 }
 
-/**
- * <<mutationにロジックを加えることができる（制御などが行える）>>
- * commit関数を使って mutations を呼び出す
- * */
 export const actions = {
 	async loginWithUserName({dispatch, commit}) {
 		const provider = new firebase.auth.GithubAuthProvider()
@@ -53,15 +41,12 @@ export const actions = {
 		commit("setUser", { name : user.displayName })
 		commit("setToken", token)
 		localStorage.setItem("token", token)
+		axios.defaults.headers.common['Authorization'] = 'token ' + token
 		dispatch("FETCH_REPOS")
 	},
 	async createTagAndRelease({dispatch, state, commit}, data) {
 		const request = axios.create({
-			baseURL: data.url,
 			method: 'POST',
-			headers: {
-				Authorization: 'token ' + state.token,
-			},
 			data: {
 				"tag_name": data.tag,
 				"target_commitish": data.target,
@@ -71,13 +56,14 @@ export const actions = {
 				"prerelease": data.isPreRelease
 			}
 		})
-		const response = await request('/releases')
+		const response = await request(data.url + '/releases')
 	},
 	async INIT_USERS({dispatch, commit}) {
 		firebase.auth().onAuthStateChanged(user => {
 			if (user) {
 				commit("setUser", { name: user.displayName})
 				commit("setToken", localStorage.getItem('token'))
+				axios.defaults.headers.common['Authorization'] = 'token ' + localStorage.getItem('token')
 				dispatch("FETCH_REPOS")
 			} else {
 				commit("setUser", null)
@@ -90,29 +76,16 @@ export const actions = {
 	async FETCH_REPOS({state, commit}) {
 		const request = axios.create({
 			baseURL: 'https://api.github.com',
-			headers: {
-				Authorization: 'token ' + state.token
-			}
 		})
 		const response = await request('/user/repos?per_page=100')
 		commit("setRepos", response.data)
 	},
 	async FETCH_TAGS({state, commit}, url) {
-		const request = axios.create({
-			headers: {
-				Authorization: 'token ' + state.token
-			}
-		})
-		const response = await request(url + '/tags')
+		const response = await axios(url + '/tags')
 		commit("setTags", response.data)
 	},
 	async FETCH_BRANCHES({state, commit}, url) {
-		const request = axios.create({
-			headers: {
-				Authorization: 'token ' + state.token
-			}
-		})
-		const response = await request(url + '/branches')
+		const response = await axios(url + '/branches')
 		commit("setBranches", response.data)
 	}
 }
